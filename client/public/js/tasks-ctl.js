@@ -16,6 +16,7 @@ gsd.controller('TaskController', function($scope, Task) {
             for (var t in tags) {
                 $scope.tags.push(t);
             }
+            $scope.tags.sort();
         });
     }
     reloadTasks();

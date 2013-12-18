@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" ng-app="gsd"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>GSD</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+
+        <link rel="stylesheet" href="css/normalize.css">
+        <link rel="stylesheet" href="css/main.css">
+        <link rel="stylesheet" href="bower_components/foundation/css/foundation.css">
+
+        <script src="js/vendor/modernizr-2.6.2.min.js"></script>
+
+        <script src="bower_components/jquery/jquery.js"></script>
+        <script src="bower_components/foundation/js/foundation.js"></script>
+        <script src="bower_components/foundation/js/foundation/foundation.reveal.js"></script>
+
+        <script src="bower_components/angular/angular.js"></script>
+        <script src="bower_components/angular-resource/angular-resource.js"></script>
+
+        <script src="js/tasks-ctl.js"></script>
+        <script src="js/services.js"></script>
+    </head>
+    <body>
+        <!--[if lt IE 7]>
+            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+
+        <div class="row">
+            <h1 class="title">Get Stuff Done</h1>
+        </div>
+
+        <div ng-controller="TaskController" class="row">
+            <div class="panel show-for-medium-up medium-3 columns">
+                <form>
+                    <ul class="side-nav">
+                        <li>Search</li>
+                        <li><input type="text" name="search" placeholder="your query" ng-model="query"></li>
+
+                        <li class="divider"></li>
+                        <li>Tags</li>
+                        <li>
+                            <a ng-click="updateSearch('')">Clear</a>
+                        </li>
+                        <li>
+                            <a ng-click="updateSearch('!@')">Untagged</a>
+                        </li>
+                        <li ng-repeat="t in tags">
+                            <a ng-click="updateSearch(t)">{{t}}</a>
+                        </li>
+                    </ul>
+                </form>
+            </div>
+
+            <div class="medium-8 columns">
+                <div class=row>
+                    <div class="panel">
+                        <div class="row collapse">
+                            <div class="small-10 columns">
+                                <input ng-model="content" type="text" placeholder="New task">
+                            </div>
+                            <div class="small-2 columns">
+                                <input class="button postfix" type="button" ng-click="addTask()" value="Create">
+                            </div>
+                        </div>
+                        <div ng-model="error" class="row alert">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <table class="small-12 columns">
+                        <tbody>
+                            <tr ng-repeat="t in tasks | filter:query:content | orderBy:orderProp">
+                                <td><input type=checkbox ng-model="t.done" ng-click="toggleDone(t)"></td>
+                                <td><a ng-click="editCurrent(t)">{{ t.content }}</a></td>
+                                <td><input type=button ng-click="deleteTask(t)" value="x"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="editModal" class="reveal-modal" data-reveal>
+                    <div class="row collapse">
+                        <div class="small-10 columns">
+                            <input type="hidden" ng-model="edit_id" value="-1">
+                            <input type="text" ng-model="edit_content">
+                        </div>
+                        <div class="small-2 columns">
+                            <input class="button postfix" type="button" ng-click="updateTask()" value="Update">
+                        </div>
+                    </div>
+                    <div class="row alert" ng-model="edit_status"></div>
+                    <a class="close-reveal-modal">&#215;</a>
+                </div>
+            </div>
+        </div>
+
+        <script src="js/plugins.js"></script>
+        <script src="js/main.js"></script>
+        <script>$(document).foundation();</script>
+    </body>
+</html>

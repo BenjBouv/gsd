@@ -5,6 +5,7 @@
     "start": "coffee server.coffee"
   },
   "dependencies": {
-    "americano": "0.2.13"
+    "americano": "0.2.13",
+    "sqlite3": "latest"
   }
 }

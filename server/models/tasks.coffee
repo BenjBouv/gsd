@@ -1,52 +1,70 @@
-tasks = [
-            id: 0
-            content: 'do the laundry'
-            done: false
-        ,
-            id: 1
-            content: 'do the harlem shake'
-            done: false
-        ,
-            id: 2
-            content: 'get s*** done'
-            done: true
-    ]
-nextId = 3
+sql = require('sqlite3').verbose()
+
+createTable = () ->
+    db.run '''
+        CREATE TABLE IF NOT EXISTS todos(content text, done integer);
+    '''
+
+db = new sql.Database('./gsd.sqlite3', createTable);
 
 module.exports.all = (cb) ->
-    cb null, tasks
+    db.all 'SELECT rowid as id, * FROM todos;', (err, rows) ->
+        if err
+            console.error err
+            cb {code: 500, msg: err.message}
+            return
+
+        rows = rows.map (a) ->
+            a.done = !!a.done
+            a
+
+        cb null, rows
 
 module.exports.byId = byId = (id, cb) ->
-    for t in tasks
-        if t.id == id
-            cb null, t
+    db.get 'SELECT rowid as id, * FROM todos WHERE rowid = ?', id, (err, row) ->
+        if err
+            console.error err
+            cb {code: 500, msg: err.message}
             return
-    cb {code: 404, msg: 'task not found'}
+        if typeof row == 'undefined'
+            cb {code: 404, msg: 'task not found'}
+            return
+        row.done = !!row.done
+        cb null, row
 
 module.exports.add = (task, cb) ->
-    task.id = nextId++
-    tasks.push task
-    cb null
+    db.run 'INSERT INTO todos(content, done) VALUES (?, ?)', task.content, 0, (err, results) ->
+        if err
+            console.error err
+            cb {code: 500, msg: err.message}
+            return
+        cb null
 
 module.exports.update = (tid, newT, cb) ->
     byId tid, (err, t) ->
         if err
+            console.error err
             cb err
             return
-        tasks[tasks.indexOf(t)] = newT
-        cb null, newT
+
+        db.run 'UPDATE todos SET content = ?, done = ? WHERE rowid = ?', newT.content, newT.done | 0, tid, (err2) ->
+            if err2
+                console.error err2
+                cb {code: 500, msg: err2.message}
+                return
+            byId tid, cb
 
 module.exports.delete = (tid, cb) ->
     byId tid, (err, t) ->
         if err
+            console.error err
             cb err
             return
 
-        for i, t of tasks
-            if t.id == tid
-                tasks.splice i, 1
-                cb null
+        db.run 'DELETE FROM todos WHERE rowid = ?', tid, (err2) ->
+            if err2
+                console.error err2
+                cb {code: 500, msg: err2.message}
                 return
-
-        cb {code: 404, msg: 'not found'}
+            cb null
 

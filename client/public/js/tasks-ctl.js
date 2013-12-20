@@ -5,21 +5,39 @@ gsd.controller('TaskController', function($scope, Task) {
     $scope.orderProp = 'done';
 
     var tags;
-    function reloadTasks() {
-        $scope.tasks = Task.query(function(tasks) {
-            tags = {};
-            for (var i = 0; i < tasks.length; ++i) {
-                var c = tasks[i].content;
-                findTags(c);
-            }
-            $scope.tags = [];
-            for (var t in tags) {
-                $scope.tags.push(t);
-            }
-            $scope.tags.sort();
+    function findAllTags() {
+        tags = {};
+        for (var i = 0; i < $scope.tasks.length; ++i) {
+            var c = $scope.tasks[i].content;
+            findTags(c);
+        }
+        $scope.tags = [];
+        for (var t in tags) {
+            $scope.tags.push(t);
+        }
+        $scope.tags.sort();
+    }
+
+    var reloadTasks = function () {
+        var method = (archivedMode) ? Task.archived : Task.query;
+        $scope.tasks = method(function() {
+            findAllTags();
         });
     }
+    var archivedMode = false;
     reloadTasks();
+
+    $scope.getCurrentTasks = function() {
+        archivedMode = false;
+        reloadTasks();
+    }
+
+    $scope.getArchivedTasks = function() {
+        archivedMode = true;
+        $scope.tasks = Task.archived(function() {
+            findAllTags();
+        });
+    }
 
     function findTags(val) {
         var results = val.match(/@(\w+)/g);
@@ -104,6 +122,17 @@ gsd.controller('TaskController', function($scope, Task) {
         }, function() {
             // error
             $scope.edit_status = 'Error when updating the task content';
+        });
+    }
+
+    $scope.archiveTask = function(task) {
+        task.archived = true;
+        task.$save(function() {
+            // success
+            reloadTasks();
+        }, function() {
+            // error
+            $scope.edit_status = 'Error when archiving the task content';
         });
     }
 });

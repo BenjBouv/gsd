@@ -4,9 +4,12 @@ module.exports.index = (req, res, next) ->
     res.render 'index.html'
 
 module.exports.all = (req, res, next) ->
-    Tasks.all (err, tasks) ->
+    archived = req.param 'archived'
+    archived ?= false
+
+    Tasks.all archived, (err, tasks) ->
         if err
-            res.send 500
+            res.send err.code, err.msg
             return
         res.json tasks
 
@@ -17,6 +20,7 @@ module.exports.add = (req, res, next) ->
     t =
         content: req.param 'content'
         done: false
+        archived: false
 
     if IsEmptyString t.content
         res.send 400, 'empty content for the todo'
@@ -32,6 +36,7 @@ module.exports.update = (req, res, next) ->
     id = req.param 'id'
     content = req.param 'content'
     done = req.param 'done'
+    archived = req.param 'archived'
 
     if !id || !content || typeof done == 'undefined'
         res.send 400, 'missing parameter'
@@ -39,9 +44,11 @@ module.exports.update = (req, res, next) ->
 
     id = id | 0
     done = !!done
+    archived = !!archived
     t =
         id: id
         done: done
+        archived: archived
         content: content
 
     if IsEmptyString t.content

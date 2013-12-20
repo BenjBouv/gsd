@@ -45,6 +45,11 @@
                         <li><input type="text" name="search" placeholder="your query" ng-model="query"></li>
 
                         <li class="divider"></li>
+                        <li>
+                            <a ng-click="getCurrentTasks()">Current</a>
+                            <a ng-click="getArchivedTasks()">Archived</a>
+                        </li>
+                        <li class="divider"></li>
                         <li>Tags</li>
                         <li>
                             <a ng-click="updateSearch('')">Clear</a>
@@ -82,6 +87,7 @@
                                 <td><input type=checkbox ng-model="t.done" ng-click="toggleDone(t)"></td>
                                 <td><a ng-click="editCurrent(t)">{{ t.content }}</a></td>
                                 <td><input type=button ng-click="deleteTask(t)" value="x"></td>
+                                <td><input type=button ng-click="archiveTask(t)" value="archive"></td>
                             </tr>
                         </tbody>
                     </table>

@@ -23,7 +23,7 @@ gsd.controller('TaskController', function($scope, Task) {
         for (var i in results) {
 
             var found = tags[results[i]] = tags[results[i]] || {
-                name: results[i],
+                name: results[i].substr(1, results[i].length - 1), // remove the @
                 done: 0,
                 total: 0
             };

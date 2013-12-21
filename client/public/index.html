@@ -43,6 +43,7 @@
                     <ul class="side-nav">
                         <li>Search</li>
                         <li><input type="text" name="search" placeholder="your query" ng-model="query"></li>
+                        <li><a ng-click="updateSearch('')">Clear</a></li>
 
                         <li class="divider"></li>
                         <li>
@@ -51,9 +52,6 @@
                         </li>
                         <li class="divider"></li>
                         <li>Tags</li>
-                        <li>
-                            <a ng-click="updateSearch('')">Clear</a>
-                        </li>
                         <li>
                             <a ng-click="updateSearch('!@')">Untagged</a>
                         </li>

@@ -8,14 +8,29 @@ gsd.controller('TaskController', function($scope, Task) {
     function findAllTags() {
         tags = {};
         for (var i = 0; i < $scope.tasks.length; ++i) {
-            var c = $scope.tasks[i].content;
-            findTags(c);
+            var t = $scope.tasks[i];
+            findTags(t);
         }
         $scope.tags = [];
-        for (var t in tags) {
-            $scope.tags.push(t);
+        for (var i in tags) {
+            $scope.tags.push(tags[i]);
         }
-        $scope.tags.sort();
+        $scope.tags.sort(function (a,b){ return a.name >= b.name });
+    }
+
+    function findTags(task) {
+        var results = task.content.match(/@(\w+)/g);
+        for (var i in results) {
+
+            var found = tags[results[i]] = tags[results[i]] || {
+                name: results[i],
+                done: 0,
+                total: 0
+            };
+
+            found.done += task.done;
+            found.total += 1;
+        }
     }
 
     var reloadTasks = function () {
@@ -39,15 +54,8 @@ gsd.controller('TaskController', function($scope, Task) {
         });
     }
 
-    function findTags(val) {
-        var results = val.match(/@(\w+)/g);
-        for (var i in results) {
-            tags[results[i]] = true;
-        }
-    }
-
     $scope.updateSearch = function(tag) {
-        $scope.query = tag;
+        $scope.query = tag.name || tag;
     }
 
     $scope.addTask = function() {
@@ -66,6 +74,7 @@ gsd.controller('TaskController', function($scope, Task) {
         task.done = !task.done;
         task.$save(function() {
             // success
+            findAllTags(); // to update count
         }, function(err) {
             // error
             $scope.error = 'Error when setting the task as done';

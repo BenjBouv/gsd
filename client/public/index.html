@@ -58,7 +58,7 @@
                             <a ng-click="updateSearch('!@')">Untagged</a>
                         </li>
                         <li ng-repeat="t in tags">
-                            <a ng-click="updateSearch(t)">{{t}}</a>
+                            <a ng-click="updateSearch(t)">{{t.name}} ({{t.done}} / {{t.total}})</a>
                         </li>
                     </ul>
                 </form>

@@ -55,7 +55,7 @@ gsd.controller('TaskController', function($scope, Task) {
     }
 
     $scope.updateSearch = function(tag) {
-        $scope.query = tag.name || tag;
+        $scope.query = (tag.name) ? '@' + tag.name : tag;
     }
 
     $scope.addTask = function() {

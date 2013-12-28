@@ -75,7 +75,7 @@
                         <li class="divider"></li>
                         <li>Places</li>
                         <li>
-                            <a ng-click="Search.clear('place')">No particular location</a>
+                            <a ng-click="Search.clear('place')">Clear location</a>
                         </li>
                         <li ng-repeat="p in places">
                             <a ng-click="Search.update('@' + p.name)">{{p.name}} ({{p.done}} / {{p.total}})</a>
@@ -84,7 +84,7 @@
                         <li class="divider"></li>
                         <li>Priorities</li>
                         <li>
-                            <a ng-click="Search.clear('priority')">No priority</a>
+                            <a ng-click="Search.clear('priority')">Clear priority</a>
                         </li>
                         <li ng-repeat="p in priorities">
                             <a ng-click="Search.update(':p' + p.name)">{{p.name}} ({{p.done}} / {{p.total}})</a>

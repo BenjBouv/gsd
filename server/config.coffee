@@ -2,6 +2,8 @@ americano = require 'americano'
 
 module.exports =
     common: [
+        americano.cookieParser 'mylittlesecret'
+        americano.session()
         americano.json()
         americano.urlencoded()
         americano.methodOverride()

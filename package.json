@@ -6,6 +6,7 @@
   },
   "dependencies": {
     "americano": "0.2.13",
-    "sqlite3": "latest"
+    "sqlite3": "latest",
+    "express-persona": "~0.1.1"
   }
 }

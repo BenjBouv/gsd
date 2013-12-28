@@ -1,5 +1,8 @@
 Tasks = require '../models/tasks'
 
+module.exports.login = (req, res, next) ->
+    res.json req.session.email
+
 module.exports.index = (req, res, next) ->
     res.render 'index.html'
 

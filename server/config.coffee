@@ -1,6 +1,8 @@
 americano = require 'americano'
 
 module.exports =
+    persona:
+        audience: 'http://127.0.0.1:3000'
     common: [
         americano.cookieParser 'mylittlesecret'
         americano.session()

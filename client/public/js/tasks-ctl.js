@@ -132,6 +132,7 @@ gsd.controller('TaskController', function($scope, Task) {
                 where: "",
                 rest: {}
             };
+            _tags = {};
         }
 
         function _reinitCurrent() {
@@ -139,8 +140,6 @@ gsd.controller('TaskController', function($scope, Task) {
 
             _emptyQuery();
             if (q) {
-                _tags = {};
-
                 var words = q.split(' ');
                 for (var i in words)
                     _parse(words[i]);

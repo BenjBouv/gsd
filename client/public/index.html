@@ -43,7 +43,7 @@
                     <ul class="side-nav">
                         <li>Search</li>
                         <li><input type="text" name="search" placeholder="your query" ng-model="query"></li>
-                        <li><a ng-click="updateSearch('')">Clear</a></li>
+                        <li><a ng-click="Search.clear('')">Clear</a></li>
 
                         <li class="divider"></li>
                         <li>
@@ -54,37 +54,40 @@
                         <li class="divider"></li>
                         <li>Status</li>
                         <li>
-                            <a ng-click="updateSearch('!:w')">Next Action ({{status.next_action.done}} / {{status.next_action.total}})</a>
+                            <a ng-click="Search.update('!:w')">Next Action ({{status.next_action.done}} / {{status.next_action.total}})</a>
                         </li>
                         <li>
-                            <a ng-click="updateSearch(':w')">Waiting ({{status.waiting.done}} / {{status.waiting.total}})</a>
+                            <a ng-click="Search.update(':w')">Waiting ({{status.waiting.done}} / {{status.waiting.total}})</a>
                         </li>
 
                         <li class="divider"></li>
                         <li>Tags</li>
                         <li>
-                            <a ng-click="updateSearch('!#')">Untagged</a>
+                            <a ng-click="Search.clear('tag')">Clear tags</a>
+                        </li>
+                        <li>
+                            <a ng-click="Search.update('!#')">No tags</a>
                         </li>
                         <li ng-repeat="t in tags">
-                            <a ng-click="updateSearch('#' + t.name)">{{t.name}} ({{t.done}} / {{t.total}})</a>
+                            <a ng-click="Search.update('#' + t.name)">{{t.name}} ({{t.done}} / {{t.total}})</a>
                         </li>
 
                         <li class="divider"></li>
                         <li>Places</li>
                         <li>
-                            <a ng-click="updateSearch('!@')">No particular location</a>
+                            <a ng-click="Search.clear('place')">No particular location</a>
                         </li>
                         <li ng-repeat="p in places">
-                            <a ng-click="updateSearch('@' + p.name)">{{p.name}} ({{p.done}} / {{p.total}})</a>
+                            <a ng-click="Search.update('@' + p.name)">{{p.name}} ({{p.done}} / {{p.total}})</a>
                         </li>
 
                         <li class="divider"></li>
                         <li>Priorities</li>
                         <li>
-                            <a ng-click="updateSearch('!:p')">No priority</a>
+                            <a ng-click="Search.clear('priority')">No priority</a>
                         </li>
                         <li ng-repeat="p in priorities">
-                            <a ng-click="updateSearch(':p' + p.name)">{{p.name}} ({{p.done}} / {{p.total}})</a>
+                            <a ng-click="Search.update(':p' + p.name)">{{p.name}} ({{p.done}} / {{p.total}})</a>
                         </li>
                     </ul>
                 </form>

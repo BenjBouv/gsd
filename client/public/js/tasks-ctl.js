@@ -121,9 +121,114 @@ gsd.controller('TaskController', function($scope, Task) {
         });
     }
 
-    $scope.updateSearch = function(str) {
-        $scope.query = str;
-    }
+    $scope.Search = (function() {
+        var _current = {};
+        var _tags = {}; // eliminate redundant tags by set
+
+        function _emptyQuery() {
+            _current = {
+                tags: [],
+                priority: "",
+                where: "",
+                rest: {}
+            };
+        }
+
+        function _reinitCurrent() {
+            var q = $scope.query;
+
+            _emptyQuery();
+            if (q) {
+                _tags = {};
+
+                var words = q.split(' ');
+                for (var i in words)
+                    _parse(words[i]);
+            }
+        }
+        _reinitCurrent();
+
+        function _parse(str) {
+            var found = false;
+            switch(str[0]) {
+                case '@':
+                    _current.where = str;
+                    found = true;
+                    break;
+                case '#':
+                    if (typeof _tags[str] === 'undefined') {
+                        _current.tags.push(str);
+                        _tags[str] = true;
+                    }
+                    found = true;
+                    break;
+                case ':':
+                    if (str[1] && str[1] === 'p') {
+                        _current.priority = str;
+                        found = true;
+                    }
+                    break;
+                case '!':
+                    if (str[1] && str[1] === '#') {
+                        _current.tags = ['!#'];
+                        found = true;
+                    }
+            }
+            if (!found)
+                _current.rest[str] = true;
+        }
+
+        function _render() {
+            var follows = false;
+            var q = '';
+            function add(str) {
+                if (!str)
+                    return;
+                if (follows)
+                    q += ' ';
+                q += str;
+                follows = true;
+            }
+            for (var i = 0; i < _current.tags.length; ++i)
+                add(_current.tags[i]);
+            add(_current.where);
+            add(_current.priority);
+            for (var i in _current.rest)
+                add(i);
+            $scope.query = q;
+        }
+
+        function _clear(field) {
+            switch (field) {
+                case '':
+                    _emptyQuery();
+                    break;
+                case 'tag':
+                    _current.tags = [];
+                    break;
+                case 'priority':
+                    _current.priority = '';
+                    break;
+                case 'place':
+                    _current.where = '';
+                    break;
+                default:
+                    console.log('ERROR: unknown field in _clear: ' + field);
+            }
+            _render();
+        }
+
+        function _update(str) {
+            _reinitCurrent();
+            _parse(str);
+            _render();
+        }
+
+        return {
+            update: _update,
+            clear: _clear
+        }
+    })();
 
     $scope.addTask = function() {
         var t = new Task({content: $scope.content});
@@ -212,25 +317,37 @@ gsd.controller('TaskController', function($scope, Task) {
         });
     }
 
-    $scope.searchFunction = function(task) {
-        var actual = task.content;
-        var expected = $scope.query;
+    $scope.searchFunction = (function() {
+        var lastExpected;
+        var esplit;
 
-        if (!expected)
-            return true;
-
-        var esplit = expected.toString().split(' ');
-        for (var i = 0; i < esplit.length; ++i) {
-            var e = esplit[i];
-            var inverted = (e[0] === '!');
-            if (inverted) e = e.substr(1, e.length - 1);
-            var found = actual.indexOf(e) !== -1;
-
-            if (inverted && found)
-                return false;
-            if (!inverted && !found)
-                return false;
+        function prepareExpected(expected) {
+            if (lastExpected === expected)
+                return;
+            esplit = expected.toString().split(' ');
+            lastExpected = expected;
         }
-        return true;
-    }
+
+        return function(task) {
+            var actual = task.content;
+            var expected = $scope.query;
+
+            if (!expected)
+                return true;
+
+            prepareExpected(expected);
+            for (var i = 0; i < esplit.length; ++i) {
+                var e = esplit[i];
+                var inverted = (e[0] === '!');
+                if (inverted) e = e.substr(1, e.length - 1);
+                var found = actual.indexOf(e) !== -1;
+
+                if (inverted && found)
+                    return false;
+                if (!inverted && !found)
+                    return false;
+            }
+            return true;
+        }
+    })();
 });

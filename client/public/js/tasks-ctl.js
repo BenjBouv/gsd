@@ -4,62 +4,91 @@ gsd.controller('TaskController', function($scope, Task) {
     $scope.tags = [];
     $scope.places = [];
     $scope.priorities = [];
+    $scope.status = {};
 
     $scope.orderProp = 'done';
 
-    var tags;
-    var places;
-    var priorities;
+    var findMark = (function() {
+        var _set = {};
 
-    function findAllTags() {
-        tags = {};
-        for (var i = 0; i < $scope.tasks.length; ++i) {
-            var t = $scope.tasks[i];
-            findTags(t);
-        }
-        $scope.tags = [];
-        for (var i in tags) {
-            $scope.tags.push(tags[i]);
-        }
-        $scope.tags.sort(function (a,b){ return a.name >= b.name });
-    }
+        function _findMark(regex, task) {
+            var results;
 
-    function findAllPlaces() {
-        places = {}
-        for (var i = 0; i < $scope.tasks.length; ++i) {
-            var t = $scope.tasks[i];
-            findPlaces(t);
-        }
-        $scope.places = [];
-        for (var i in places) {
-            $scope.places.push(places[i]);
-        }
-        $scope.places.sort(function (a,b){ return a.name >= b.name });
-    }
+            var alreadyProcessed = {};
+            while ((results = regex.exec(task.content)) !== null) {
+                // ignore tags that are followed by a special char, like something@example.com
+                var nextChar = task.content[regex.lastIndex];
+                if (nextChar && nextChar !== ' ')
+                    continue;
 
-    function findAllPriorities() {
-        priorities = {}
-        for (var i = 0; i < $scope.tasks.length; ++i) {
-            var t = $scope.tasks[i];
-            findPriorities(t);
-        }
-        $scope.priorities = [];
-        for (var i in priorities) {
-            $scope.priorities.push(priorities[i]);
-        }
-        $scope.priorities.sort(function (a,b){ return a.name >= b.name });
-    }
+                var r = results[1];
+                // don't add the same tag if it's already present
+                if (typeof alreadyProcessed[r] !== 'undefined')
+                    continue;
 
-    var status;
+                var found = _set[r] = _set[r] || {
+                    name: r,
+                    done: 0,
+                    total: 0
+                };
+
+                found.done += task.done;
+                found.total += 1;
+                alreadyProcessed[r] = true;
+            }
+        }
+
+        function _findAllTags(regexp) {
+            _set = {};
+            for (var i = 0; i < $scope.tasks.length; ++i) {
+                var t = $scope.tasks[i];
+                _findMark(regexp, t);
+            }
+
+            var results = [];
+            for (var i in _set) {
+                results.push(_set[i]);
+            }
+            results.sort(function (a,b){ return a.name >= b.name });
+            return results;
+        }
+
+        return _findAllTags;
+    })();
+
+    var findAllTags = (function() {
+        var tagRgx = /#(\w+)/g;
+        return function() {
+            $scope.tags = findMark(tagRgx);
+        }
+    })();
+
+    var findAllPlaces = (function() {
+        var placeRgx = /@(\w+)/g;
+        return function() {
+            $scope.places = findMark(placeRgx);
+        }
+    })();
+
+    var findAllPriorities = (function() {
+        var priorityRgx = /:p(\d)/g;
+        return function() {
+            $scope.priorities = findMark(priorityRgx);
+        }
+    })();
+
     function findAllStatuses() {
-        status = {
+        var status = {
             waiting: {done: 0, total: 0},
             next_action: {done: 0, total: 0}
         };
+        var waitRgx = /:w\(([\w\s]+)\)/g;
 
         for (var i = 0; i < $scope.tasks.length; ++i) {
             var t = $scope.tasks[i];
-            findStatus(t);
+            var set = (waitRgx.test(t.content)) ? status.waiting : status.next_action;
+            set.done += t.done;
+            set.total += 1;
         }
         $scope.status = status;
     }
@@ -70,64 +99,6 @@ gsd.controller('TaskController', function($scope, Task) {
         findAllPriorities();
         findAllStatuses();
     }
-
-    function findSpecialMark(regex, task, set) {
-        var results;
-
-        var alreadyProcessed = {};
-        while ((results = regex.exec(task.content)) !== null) {
-            // ignore tags that are followed by a special char, like something@example.com
-            var nextChar = task.content[regex.lastIndex];
-            if (nextChar && nextChar !== ' ')
-                continue;
-
-            var r = results[1];
-            // don't add the same tag if it's already present
-            if (typeof alreadyProcessed[r] !== 'undefined')
-                continue;
-
-            var found = set[r] = set[r] || {
-                name: r,
-                done: 0,
-                total: 0
-            };
-
-            found.done += task.done;
-            found.total += 1;
-            alreadyProcessed[r] = true;
-        }
-    }
-
-    var findTags = (function() {
-        var tagRgx = /#(\w+)/g;
-        return function(task) {
-            findSpecialMark(tagRgx, task, tags);
-        }
-    })();
-
-    var findPlaces = (function() {
-        var placeRgx = /@(\w+)/g;
-        return function(task) {
-            findSpecialMark(placeRgx, task, places);
-        }
-    })();
-
-    var findPriorities = (function() {
-        var priorityRgx = /:p(\d)/g;
-        return function(task) {
-            findSpecialMark(priorityRgx, task, priorities);
-        }
-    })();
-
-    var findStatus = (function() {
-        var waitRgx = /:w\(([\w\s]+)\)/g;
-        return function _findWaiting(task) {
-            var results;
-            var set = (waitRgx.test(task.content)) ? status.waiting : status.next_action;
-            set.done += task.done;
-            set.total += 1;
-        }
-    })();
 
     var reloadTasks = function () {
         var method = (archivedMode) ? Task.archived : Task.query;

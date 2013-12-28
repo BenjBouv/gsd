@@ -18,23 +18,31 @@ gsd.controller('TaskController', function($scope, Task) {
         $scope.tags.sort(function (a,b){ return a.name >= b.name });
     }
 
+    var tagRgx = /@(\w+)/g;
     function findTags(task) {
-        var results = task.content.match(/@(\w+)/g);
-        var alreadyProcessed = {};
-        for (var i in results) {
+        var results;
 
-            var found = tags[results[i]] = tags[results[i]] || {
-                name: results[i].substr(1, results[i].length - 1), // remove the @
+        var alreadyProcessed = {};
+        while ((results = tagRgx.exec(task.content)) !== null) {
+            // ignore tags that are followed by a special char, like something@example.com
+            var nextChar = task.content[tagRgx.lastIndex];
+            if (nextChar && nextChar !== ' ')
+                continue;
+
+            var r = results[1];
+            // don't add the same tag if it's already present
+            if (typeof alreadyProcessed[r] !== 'undefined')
+                continue;
+
+            var found = tags[r] = tags[r] || {
+                name: r,
                 done: 0,
                 total: 0
             };
 
-            // don't add the same tag if it's already present
-            if (typeof alreadyProcessed[results[i]] === 'undefined') {
-                found.done += task.done;
-                found.total += 1;
-                alreadyProcessed[results[i]] = true;
-            }
+            found.done += task.done;
+            found.total += 1;
+            alreadyProcessed[r] = true;
         }
     }
 

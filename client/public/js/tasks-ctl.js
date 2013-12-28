@@ -211,4 +211,26 @@ gsd.controller('TaskController', function($scope, Task) {
             $scope.edit_status = 'Error when archiving the task content';
         });
     }
+
+    $scope.searchFunction = function(task) {
+        var actual = task.content;
+        var expected = $scope.query;
+
+        if (!expected)
+            return true;
+
+        var esplit = expected.toString().split(' ');
+        for (var i = 0; i < esplit.length; ++i) {
+            var e = esplit[i];
+            var inverted = (e[0] === '!');
+            if (inverted) e = e.substr(1, e.length - 1);
+            var found = actual.indexOf(e) !== -1;
+
+            if (inverted && found)
+                return false;
+            if (!inverted && !found)
+                return false;
+        }
+        return true;
+    }
 });

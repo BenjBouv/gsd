@@ -2,9 +2,15 @@ var gsd = angular.module('gsd', ['TaskService'])
 
 gsd.controller('TaskController', function($scope, Task) {
     $scope.tags = [];
+    $scope.places = [];
+    $scope.priorities = [];
+
     $scope.orderProp = 'done';
 
     var tags;
+    var places;
+    var priorities;
+
     function findAllTags() {
         tags = {};
         for (var i = 0; i < $scope.tasks.length; ++i) {
@@ -18,14 +24,60 @@ gsd.controller('TaskController', function($scope, Task) {
         $scope.tags.sort(function (a,b){ return a.name >= b.name });
     }
 
-    var tagRgx = /@(\w+)/g;
-    function findTags(task) {
+    function findAllPlaces() {
+        places = {}
+        for (var i = 0; i < $scope.tasks.length; ++i) {
+            var t = $scope.tasks[i];
+            findPlaces(t);
+        }
+        $scope.places = [];
+        for (var i in places) {
+            $scope.places.push(places[i]);
+        }
+        $scope.places.sort(function (a,b){ return a.name >= b.name });
+    }
+
+    function findAllPriorities() {
+        priorities = {}
+        for (var i = 0; i < $scope.tasks.length; ++i) {
+            var t = $scope.tasks[i];
+            findPriorities(t);
+        }
+        $scope.priorities = [];
+        for (var i in priorities) {
+            $scope.priorities.push(priorities[i]);
+        }
+        $scope.priorities.sort(function (a,b){ return a.name >= b.name });
+    }
+
+    var status;
+    function findAllStatuses() {
+        status = {
+            waiting: {done: 0, total: 0},
+            next_action: {done: 0, total: 0}
+        };
+
+        for (var i = 0; i < $scope.tasks.length; ++i) {
+            var t = $scope.tasks[i];
+            findStatus(t);
+        }
+        $scope.status = status;
+    }
+
+    function reparse() {
+        findAllTags();
+        findAllPlaces();
+        findAllPriorities();
+        findAllStatuses();
+    }
+
+    function findSpecialMark(regex, task, set) {
         var results;
 
         var alreadyProcessed = {};
-        while ((results = tagRgx.exec(task.content)) !== null) {
+        while ((results = regex.exec(task.content)) !== null) {
             // ignore tags that are followed by a special char, like something@example.com
-            var nextChar = task.content[tagRgx.lastIndex];
+            var nextChar = task.content[regex.lastIndex];
             if (nextChar && nextChar !== ' ')
                 continue;
 
@@ -34,7 +86,7 @@ gsd.controller('TaskController', function($scope, Task) {
             if (typeof alreadyProcessed[r] !== 'undefined')
                 continue;
 
-            var found = tags[r] = tags[r] || {
+            var found = set[r] = set[r] || {
                 name: r,
                 done: 0,
                 total: 0
@@ -46,10 +98,41 @@ gsd.controller('TaskController', function($scope, Task) {
         }
     }
 
+    var findTags = (function() {
+        var tagRgx = /#(\w+)/g;
+        return function(task) {
+            findSpecialMark(tagRgx, task, tags);
+        }
+    })();
+
+    var findPlaces = (function() {
+        var placeRgx = /@(\w+)/g;
+        return function(task) {
+            findSpecialMark(placeRgx, task, places);
+        }
+    })();
+
+    var findPriorities = (function() {
+        var priorityRgx = /:p(\d)/g;
+        return function(task) {
+            findSpecialMark(priorityRgx, task, priorities);
+        }
+    })();
+
+    var findStatus = (function() {
+        var waitRgx = /:w\(([\w\s]+)\)/g;
+        return function _findWaiting(task) {
+            var results;
+            var set = (waitRgx.test(task.content)) ? status.waiting : status.next_action;
+            set.done += task.done;
+            set.total += 1;
+        }
+    })();
+
     var reloadTasks = function () {
         var method = (archivedMode) ? Task.archived : Task.query;
         $scope.tasks = method(function() {
-            findAllTags();
+            reparse();
         });
     }
     var archivedMode = false;
@@ -63,12 +146,12 @@ gsd.controller('TaskController', function($scope, Task) {
     $scope.getArchivedTasks = function() {
         archivedMode = true;
         $scope.tasks = Task.archived(function() {
-            findAllTags();
+            reparse();
         });
     }
 
-    $scope.updateSearch = function(tag) {
-        $scope.query = (tag.name) ? '@' + tag.name : tag;
+    $scope.updateSearch = function(str) {
+        $scope.query = str;
     }
 
     $scope.addTask = function() {
@@ -87,7 +170,7 @@ gsd.controller('TaskController', function($scope, Task) {
         task.done = !task.done;
         task.$save(function() {
             // success
-            findAllTags(); // to update count
+            reparse(); // to update count
         }, function(err) {
             // error
             $scope.error = 'Error when setting the task as done';

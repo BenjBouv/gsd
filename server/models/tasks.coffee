@@ -2,7 +2,7 @@ sql = require('sqlite3').verbose()
 
 createTable = () ->
     db.run '''
-        CREATE TABLE IF NOT EXISTS todos(content text, done integer, archived integer);
+        CREATE TABLE IF NOT EXISTS todos(content text, done integer, archived integer, lastUpdateDate integer);
     '''
 
 db = new sql.Database('./gsd.sqlite3', createTable);
@@ -17,6 +17,7 @@ module.exports.all = (archived, cb) ->
         rows = rows.map (a) ->
             a.done = !!a.done
             a.archived = !!a.archived
+            a.lastUpdateDate = new Date(a.lastUpdateDate)
             a
 
         cb null, rows
@@ -37,7 +38,7 @@ module.exports.byId = byId = (id, cb) ->
         cb null, row
 
 module.exports.add = (task, cb) ->
-    db.run 'INSERT INTO todos(content, done, archived) VALUES (?, ?, ?)', task.content, 0, 0, (err, results) ->
+    db.run 'INSERT INTO todos(content, done, archived, lastUpdateDate) VALUES (?, ?, ?, ?)', task.content, 0, 0, +new Date, (err, results) ->
         if err
             console.error err
             cb {code: 500, msg: err.message}
@@ -51,7 +52,7 @@ module.exports.update = (tid, newT, cb) ->
             cb err
             return
 
-        db.run 'UPDATE todos SET content = ?, done = ?, archived = ? WHERE rowid = ?', newT.content, newT.done | 0, newT.archived | 0, tid, (err2) ->
+        db.run 'UPDATE todos SET content = ?, done = ?, archived = ?, lastUpdateDate = ? WHERE rowid = ?', newT.content, newT.done | 0, newT.archived | 0, +new Date, tid, (err2) ->
             if err2
                 console.error err2
                 cb {code: 500, msg: err2.message}

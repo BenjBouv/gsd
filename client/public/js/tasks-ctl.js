@@ -6,7 +6,8 @@ gsd.controller('TaskController', function($scope, Task) {
     $scope.priorities = [];
     $scope.status = {};
 
-    $scope.orderProp = 'done';
+    // sort by done first, then lastUpdateDate (so that the most ancient todos show up first)
+    $scope.orderProp = ['done', 'lastUpdateDate'];
 
     var findMark = (function() {
         var _set = {};

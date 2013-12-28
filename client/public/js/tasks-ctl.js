@@ -1,4 +1,4 @@
-var gsd = angular.module('gsd', ['TaskService'])
+var gsd = angular.module('gsd', ['gsd.TaskService'])
 
 gsd.controller('TaskController', function($scope, Task) {
     $scope.tags = [];

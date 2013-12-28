@@ -8,6 +8,7 @@ gsd.controller('LoginController', function($scope, $http, $rootScope) {
     var resetUser = function () {
         $rootScope.isAuthenticated = false;
         localStorage.removeItem('persona.email');
+        delete $rootScope.user;
     };
 
     // Synchronize Angular and Persona
@@ -18,7 +19,7 @@ gsd.controller('LoginController', function($scope, $http, $rootScope) {
                 method: 'GET'
             }).success(function (data) {
                 $rootScope.isAuthenticated = true;
-                $rootScope.user = data;
+                $rootScope.user = data.email;
             }).error(function (data) {
                 localStorage.removeItem('persona.email')
                 console.log('Login failed because ' + data);
@@ -35,8 +36,8 @@ gsd.controller('LoginController', function($scope, $http, $rootScope) {
 
             $http({
                 url: '/persona/verify',
-            method: 'POST',
-            data: { assertion: assertion }
+                method: 'POST',
+                data: { assertion: assertion }
             }).success(function (data) {
                 if (data.status === 'okay') {
                     $http({
@@ -44,8 +45,8 @@ gsd.controller('LoginController', function($scope, $http, $rootScope) {
                         method: 'GET'
                     }).success(function (data) {
                         $rootScope.isAuthenticated = true;
-                        $rootScope.user = data;
-                        localStorage.setItem('persona.email', data);
+                        $rootScope.user = data.email;
+                        localStorage.setItem('persona.email', data.email);
                     }).error(function (data) {
                         resetUser();
                         console.log('Login failed');

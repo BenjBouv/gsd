@@ -1,7 +1,11 @@
 Tasks = require '../models/tasks'
+Users = require '../models/users'
 
 module.exports.login = (req, res, next) ->
-    res.json req.session.email
+    Users.getId req.session.email, () ->
+
+    res.json
+        email: req.session.email
 
 module.exports.index = (req, res, next) ->
     res.render 'index.html'
@@ -10,7 +14,8 @@ module.exports.all = (req, res, next) ->
     archived = req.param 'archived'
     archived ?= false
 
-    Tasks.all archived, (err, tasks) ->
+    owner = req.session.email
+    Tasks.all owner, archived, (err, tasks) ->
         if err
             res.send err.code, err.msg
             return
@@ -29,7 +34,8 @@ module.exports.add = (req, res, next) ->
         res.send 400, 'empty content for the todo'
         return
 
-    Tasks.add t, (err) ->
+    owner = req.session.email
+    Tasks.add owner, t, (err) ->
         if err
             res.send 500
             return
@@ -58,7 +64,8 @@ module.exports.update = (req, res, next) ->
         res.send 400, 'empty content for the todo'
         return
 
-    Tasks.update id, t, (err, newT) ->
+    owner = req.session.email
+    Tasks.update owner, id, t, (err, newT) ->
         if err
             res.send err.code, err.msg
             return
@@ -72,8 +79,8 @@ module.exports.delete = (req, res, next) ->
         return
 
     id = id | 0
-
-    Tasks.delete id, (err) ->
+    owner = req.session.email
+    Tasks.delete owner, id, (err) ->
         if err
             res.send 500
             return

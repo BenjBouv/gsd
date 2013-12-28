@@ -20,6 +20,7 @@ gsd.controller('TaskController', function($scope, Task) {
 
     function findTags(task) {
         var results = task.content.match(/@(\w+)/g);
+        var alreadyProcessed = {};
         for (var i in results) {
 
             var found = tags[results[i]] = tags[results[i]] || {
@@ -28,8 +29,12 @@ gsd.controller('TaskController', function($scope, Task) {
                 total: 0
             };
 
-            found.done += task.done;
-            found.total += 1;
+            // don't add the same tag if it's already present
+            if (typeof alreadyProcessed[results[i]] === 'undefined') {
+                found.done += task.done;
+                found.total += 1;
+                alreadyProcessed[results[i]] = true;
+            }
         }
     }
 

@@ -97,8 +97,19 @@ textarea {
    Author's custom styles
    ========================================================================== */
 
+.todo-btn {
+    border: 0;
+    padding: .5em 25px;
+    color: white;
+}
 
+.todo {
+    background-color: #22AEDC;
+}
 
+.done {
+    background-color: #00DD00;
+}
 
 
 

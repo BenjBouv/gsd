@@ -113,7 +113,7 @@
                     <table class="small-12 columns">
                         <tbody>
                             <tr ng-repeat="t in tasks | filter:searchFunction| orderBy:orderProp">
-                                <td><input type=checkbox ng-model="t.done" ng-click="toggleDone(t)"></td>
+                                <td><input type=button class='todo-btn' ng-class="t.done ? 'done' : 'todo'" ng-click="toggleDone(t)" ng-value="t.done? 'done' : 'todo'"></td>
                                 <td><a ng-click="editCurrent(t)">{{ t.content }}</a></td>
                                 <td><input type=button ng-click="deleteTask(t)" value="x"></td>
                                 <td><input type=button ng-click="archiveTask(t)" value="archive"></td>

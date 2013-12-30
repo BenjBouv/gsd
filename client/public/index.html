@@ -129,7 +129,7 @@
                                 <td><input type=button class='todo-btn' ng-class="t.done ? 'done' : 'todo'" ng-click="toggleDone(t)" ng-value="t.done? 'done' : 'todo'"></td>
                                 <td><a ng-click="editCurrent(t)">{{ t.content }}</a></td>
                                 <td><input type=button ng-click="deleteTask(t)" value="x"></td>
-                                <td><input type=button ng-click="archiveTask(t)" value="archive"></td>
+                                <td><input type=button ng-click="archiveTask(t)" ng-value="(archivedMode) ? 'current' : 'archive'"></td>
                             </tr>
                         </tbody>
                     </table>

@@ -102,21 +102,21 @@ gsd.controller('TaskController', function($scope, Task) {
     }
 
     var reloadTasks = function () {
-        var method = (archivedMode) ? Task.archived : Task.query;
+        var method = ($scope.archivedMode) ? Task.archived : Task.query;
         $scope.tasks = method(function() {
             reparse();
         });
     }
-    var archivedMode = false;
+    $scope.archivedMode = false;
     reloadTasks();
 
     $scope.getCurrentTasks = function() {
-        archivedMode = false;
+        $scope.archivedMode = false;
         reloadTasks();
     }
 
     $scope.getArchivedTasks = function() {
-        archivedMode = true;
+        $scope.archivedMode = true;
         $scope.tasks = Task.archived(function() {
             reparse();
         });
@@ -307,7 +307,7 @@ gsd.controller('TaskController', function($scope, Task) {
     }
 
     $scope.archiveTask = function(task) {
-        task.archived = true;
+        task.archived = !$scope.archivedMode;
         task.$save(function() {
             // success
             reloadTasks();

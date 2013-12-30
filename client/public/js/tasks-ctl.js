@@ -83,7 +83,7 @@ gsd.controller('TaskController', function($scope, Task) {
             waiting: {done: 0, total: 0},
             next_action: {done: 0, total: 0}
         };
-        var waitRgx = /:w\(([\w\s]+)\)/g;
+        var waitRgx = /:w/g;
 
         for (var i = 0; i < $scope.tasks.length; ++i) {
             var t = $scope.tasks[i];

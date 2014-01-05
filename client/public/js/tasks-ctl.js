@@ -324,12 +324,12 @@ gsd.controller('TaskController', function($scope, Task) {
         function prepareExpected(expected) {
             if (lastExpected === expected)
                 return;
-            esplit = expected.toString().split(' ');
+            esplit = expected.toString().toLowerCase().split(' ');
             lastExpected = expected;
         }
 
         return function(task) {
-            var actual = task.content;
+            var actual = task.content.toLowerCase();
             var expected = $scope.query;
 
             if (!expected)

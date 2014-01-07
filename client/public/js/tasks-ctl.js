@@ -1,10 +1,39 @@
 var gsd = angular.module('gsd', ['gsd.TaskService'])
 
 gsd.controller('TaskController', function($scope, Task) {
+    var metatags = {
+        waiting: {
+            isSwitch: true,
+            name: 'Waiting list',
+            regexp: /:w/g,
+            order: 0
+        },
+        tag: {
+            isSwitch: false,
+            name: 'Tag',
+            regexp: /#(\w+)/g,
+            order: 10
+        },
+        place: {
+            isSwitch: false,
+            name: 'Place',
+            regexp: /@(\w+)/g,
+            order: 20
+        },
+        priority: {
+            isSwitch: false,
+            name: 'Priority',
+            regexp: /:p(\d)/g,
+            order: 30
+        }
+    };
+
+    var results = {};
+
     $scope.tags = [];
     $scope.places = [];
     $scope.priorities = [];
-    $scope.status = {};
+    $scope.waiting = {};
 
     // sort by done first, then lastUpdateDate (so that the most ancient todos show up first)
     $scope.orderProp = ['done', 'lastUpdateDate'];
@@ -57,48 +86,37 @@ gsd.controller('TaskController', function($scope, Task) {
         return _findAllTags;
     })();
 
-    var findAllTags = (function() {
-        var tagRgx = /#(\w+)/g;
-        return function() {
-            $scope.tags = findMark(tagRgx);
-        }
-    })();
-
-    var findAllPlaces = (function() {
-        var placeRgx = /@(\w+)/g;
-        return function() {
-            $scope.places = findMark(placeRgx);
-        }
-    })();
-
-    var findAllPriorities = (function() {
-        var priorityRgx = /:p(\d)/g;
-        return function() {
-            $scope.priorities = findMark(priorityRgx);
-        }
-    })();
-
-    function findAllStatuses() {
-        var status = {
-            waiting: {done: 0, total: 0},
-            next_action: {done: 0, total: 0}
+    function findSwitch(regexp) {
+        var result = {
+            with: {done: 0, total: 0},
+            without: {done: 0, total: 0}
         };
-        var waitRgx = /:w/g;
 
         for (var i = 0; i < $scope.tasks.length; ++i) {
             var t = $scope.tasks[i];
-            var set = (waitRgx.test(t.content)) ? status.waiting : status.next_action;
+            var set = (regexp.test(t.content)) ? result.with : result.without;
             set.done += t.done;
             set.total += 1;
         }
-        $scope.status = status;
+        return result;
     }
 
     function reparse() {
-        findAllTags();
-        findAllPlaces();
-        findAllPriorities();
-        findAllStatuses();
+        for (var id in metatags) {
+            var m = metatags[id];
+            var r;
+            if (m.isSwitch) {
+                r = findSwitch(m.regexp);
+            } else {
+                r = findMark(m.regexp);
+            }
+            results[id] = r;
+        }
+
+        $scope.tags = results.tag;
+        $scope.places = results.place;
+        $scope.priorities = results.priority;
+        $scope.waiting = results.waiting;
     }
 
     var reloadTasks = function () {

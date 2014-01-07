@@ -69,10 +69,10 @@
                         <li class="divider"></li>
                         <li>Status</li>
                         <li>
-                            <a ng-click="Search.update('!:w')">Next Action ({{status.next_action.done}} / {{status.next_action.total}})</a>
+                            <a ng-click="Search.update('!:w')">Next Action ({{waiting.without.done}} / {{waiting.without.total}})</a>
                         </li>
                         <li>
-                            <a ng-click="Search.update(':w')">Waiting ({{status.waiting.done}} / {{status.waiting.total}})</a>
+                            <a ng-click="Search.update(':w')">Waiting ({{waiting.with.done}} / {{waiting.with.total}})</a>
                         </li>
 
                         <li class="divider"></li>

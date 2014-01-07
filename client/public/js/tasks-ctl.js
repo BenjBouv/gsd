@@ -11,7 +11,7 @@ gsd.controller('TaskController', function($scope, Task) {
         tag: {
             isSwitch: false,
             name: 'Tag',
-            regexp: /#(\w+)/g,
+            regexp: /#(\w+)?/g,
             order: 10
         },
         place: {
@@ -141,23 +141,20 @@ gsd.controller('TaskController', function($scope, Task) {
     }
 
     $scope.Search = (function() {
+        var _unmatched = {};
         var _current = {};
-        var _tags = {}; // eliminate redundant tags by set
 
-        function _emptyQuery() {
-            _current = {
-                tags: [],
-                priority: "",
-                where: "",
-                rest: {}
-            };
-            _tags = {};
+        function _emptyCurrentQuery() {
+            _unmatched = {};
+            _current = {};
+            for (var id in metatags)
+                _current[id] = ""
         }
 
         function _reinitCurrent() {
             var q = $scope.query;
 
-            _emptyQuery();
+            _emptyCurrentQuery();
             if (q) {
                 var words = q.split(' ');
                 for (var i in words)
@@ -168,32 +165,21 @@ gsd.controller('TaskController', function($scope, Task) {
 
         function _parse(str) {
             var found = false;
-            switch(str[0]) {
-                case '@':
-                    _current.where = str;
+            for (var id in metatags) {
+                var m = metatags[id];
+                m.regexp.lastIndex = 0; // damn, global regexp
+                if (m.regexp.test(str)) {
+                    _current[id] = str;
                     found = true;
                     break;
-                case '#':
-                    if (typeof _tags[str] === 'undefined') {
-                        _current.tags.push(str);
-                        _tags[str] = true;
-                    }
+                } else if (m.isSwitch && str[0] === '!' && m.regexp.test(str.substr(1, str.length))) {
+                    _current[id] = str;
                     found = true;
                     break;
-                case ':':
-                    if (str[1] && str[1] === 'p') {
-                        _current.priority = str;
-                        found = true;
-                    }
-                    break;
-                case '!':
-                    if (str[1] && str[1] === '#') {
-                        _current.tags = ['!#'];
-                        found = true;
-                    }
+                }
             }
             if (!found)
-                _current.rest[str] = true;
+                _unmatched[str] = true;
         }
 
         function _render() {
@@ -207,33 +193,32 @@ gsd.controller('TaskController', function($scope, Task) {
                 q += str;
                 follows = true;
             }
-            for (var i = 0; i < _current.tags.length; ++i)
-                add(_current.tags[i]);
-            add(_current.where);
-            add(_current.priority);
-            for (var i in _current.rest)
-                add(i);
+            for (var id in _current)
+                add(_current[id]);
+            for (var str in _unmatched)
+                add(str);
             $scope.query = q;
         }
 
         function _clear(field) {
-            switch (field) {
-                case '':
-                    _emptyQuery();
-                    break;
-                case 'tag':
-                    _current.tags = [];
-                    break;
-                case 'priority':
-                    _current.priority = '';
-                    break;
-                case 'place':
-                    _current.where = '';
-                    break;
-                default:
-                    console.log('ERROR: unknown field in _clear: ' + field);
+            if (field === '') {
+                _emptyCurrentQuery();
+                _render();
+                return;
             }
-            _render();
+
+            var found = false;
+            for (var id in metatags) {
+                if (field === id) {
+                    found = true;
+                    _current[id] = "";
+                    break;
+                }
+            }
+            if (!found)
+                console.log('ERROR: unknown field in _clear: ' + field);
+            else
+                _render();
         }
 
         function _update(str) {

@@ -5,7 +5,7 @@ AddDefaults = (req, res, next) ->
     defaults = [
        isSwitch: false
        name: 'Tag'
-       regexp: '#(\\w+)?'
+       regexp: '#(\\w+)'
        querystr: '#'
        order: 10
     ,

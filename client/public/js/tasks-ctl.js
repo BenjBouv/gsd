@@ -1,40 +1,38 @@
 var gsd = angular.module('gsd', ['gsd.TaskService'])
 
 gsd.controller('TaskController', function($scope, Task) {
-    var metatags = {
+    var metatags = $scope.metatags = {
         waiting: {
             isSwitch: true,
             name: 'Waiting list',
             regexp: /:w/g,
+            querystr: ':w',
             order: 0
         },
         tag: {
             isSwitch: false,
             name: 'Tag',
             regexp: /#(\w+)?/g,
+            querystr: '#',
             order: 10
         },
         place: {
             isSwitch: false,
             name: 'Place',
             regexp: /@(\w+)/g,
+            querystr: '@',
             order: 20
         },
         priority: {
             isSwitch: false,
             name: 'Priority',
             regexp: /:p(\d)/g,
+            querystr: ':p',
             order: 30
         }
     };
 
-    var results = {};
-
-    $scope.tags = [];
-    $scope.places = [];
-    $scope.priorities = [];
-    $scope.waiting = {};
-
+    var results = $scope.results = {};
     // sort by done first, then lastUpdateDate (so that the most ancient todos show up first)
     $scope.orderProp = ['done', 'lastUpdateDate'];
 
@@ -172,7 +170,7 @@ gsd.controller('TaskController', function($scope, Task) {
                     _current[id] = str;
                     found = true;
                     break;
-                } else if (m.isSwitch && str[0] === '!' && m.regexp.test(str.substr(1, str.length))) {
+                } else if (str[0] === '!' && str.substr(1, str.length) == m.querystr) {
                     _current[id] = str;
                     found = true;
                     break;

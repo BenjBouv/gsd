@@ -61,49 +61,37 @@
                         <li><a ng-click="Search.clear('')">Clear</a></li>
 
                         <li class="divider"></li>
+
                         <li>
                             <a ng-click="getCurrentTasks()">Current</a>
                             <a ng-click="getArchivedTasks()">Archived</a>
                         </li>
+                    </ul>
 
+                    <ul class="side-nav" ng-repeat='(id, m) in metatags'>
                         <li class="divider"></li>
-                        <li>Status</li>
-                        <li>
-                            <a ng-click="Search.update('!:w')">Next Action ({{waiting.without.done}} / {{waiting.without.total}})</a>
-                        </li>
-                        <li>
-                            <a ng-click="Search.update(':w')">Waiting ({{waiting.with.done}} / {{waiting.with.total}})</a>
-                        </li>
 
-                        <li class="divider"></li>
-                        <li>Tags</li>
-                        <li>
-                            <a ng-click="Search.clear('tag')">Clear tags</a>
-                        </li>
-                        <li>
-                            <a ng-click="Search.update('!#')">No tags</a>
-                        </li>
-                        <li ng-repeat="t in tags">
-                            <a ng-click="Search.update('#' + t.name)">{{t.name}} ({{t.done}} / {{t.total}})</a>
-                        </li>
+                        <div ng-if="m.isSwitch">
+                             <li>
+                             <a ng-click="Search.update(m.querystr)">{{m.name}} ({{results[id].with.done}} / {{results[id].with.total}})</a>
+                            </li>
+                            <li>
+                                 <a ng-click="Search.update('!' + m.querystr)">Not {{m.name}} ({{results[id].without.done}} / {{results[id].without.total}})</a>
+                            </li>
+                        </div>
 
-                        <li class="divider"></li>
-                        <li>Places</li>
-                        <li>
-                            <a ng-click="Search.clear('place')">Clear location</a>
-                        </li>
-                        <li ng-repeat="p in places">
-                            <a ng-click="Search.update('@' + p.name)">{{p.name}} ({{p.done}} / {{p.total}})</a>
-                        </li>
-
-                        <li class="divider"></li>
-                        <li>Priorities</li>
-                        <li>
-                            <a ng-click="Search.clear('priority')">Clear priority</a>
-                        </li>
-                        <li ng-repeat="p in priorities">
-                            <a ng-click="Search.update(':p' + p.name)">{{p.name}} ({{p.done}} / {{p.total}})</a>
-                        </li>
+                        <div ng-if="!m.isSwitch">
+                            <li>{{m.name}}</li>
+                            <li>
+                                <a ng-click="Search.clear(id)">Clear {{m.name}}</a>
+                            </li>
+                            <li>
+                                <a ng-click="Search.update('!' + m.querystr)">No {{m.name}}</a>
+                            </li>
+                            <li ng-repeat="r in results[id]">
+                                <a ng-click="Search.update(m.querystr + r.name)">{{r.name}} ({{r.done}} / {{r.total}})</a>
+                            </li>
+                        </div>
                     </ul>
                 </form>
             </div>

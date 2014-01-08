@@ -111,7 +111,10 @@ textarea {
     background-color: #00DD00;
 }
 
-
+ul.side-nav {
+    margin: 0;
+    padding: 0;
+}
 
 
 

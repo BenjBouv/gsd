@@ -103,7 +103,10 @@ gsd.controller('TaskController', function($scope, Task) {
 
         for (var i = 0; i < $scope.tasks.length; ++i) {
             var t = $scope.tasks[i];
+
+            regexp.lastIndex = 0; // freaking global regexp
             var set = (regexp.test(t.content)) ? result.with : result.without;
+
             set.done += t.done;
             set.total += 1;
         }

@@ -1,7 +1,7 @@
 var gsd = angular.module('gsd', ['gsd.TaskService'])
 
 gsd.controller('TaskController', function($scope, Task) {
-    var metatags = $scope.metatags = {
+    var metatags = {
         waiting: {
             isSwitch: true,
             name: 'Waiting list',
@@ -31,6 +31,17 @@ gsd.controller('TaskController', function($scope, Task) {
             order: 30
         }
     };
+
+    $scope.metatags = (function() {
+        var a = [];
+        for (var id in metatags) {
+            var obj = metatags[id];
+            obj.id = id;
+            a.push(obj);
+        }
+        a.sort(function(x,y){return x.order > y.order});
+        return a;
+    })();
 
     var results = $scope.results = {};
     // sort by done first, then lastUpdateDate (so that the most ancient todos show up first)

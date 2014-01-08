@@ -1,18 +1,18 @@
 NeedsAuth = require './loggedIn'
-index = require './index'
+tasks = require './tasks'
 tags = require './tags'
 
 module.exports =
     '':
-        get: index.index
+        get: tasks.index
     'login':
-        get: NeedsAuth index.login
+        get: NeedsAuth tasks.login
     'tasks':
-        get: NeedsAuth index.all
-        post: NeedsAuth index.add
+        get: NeedsAuth tasks.all
+        post: NeedsAuth tasks.add
     'tasks/:id':
-        post: NeedsAuth index.update
-        delete: NeedsAuth index.delete
+        post: NeedsAuth tasks.update
+        delete: NeedsAuth tasks.delete
     'tags':
         get: NeedsAuth tags.all
         post: NeedsAuth tags.add

@@ -54,7 +54,7 @@ CheckParams = (req) ->
     querystr = req.param 'querystr'
     order = req.param 'order'
 
-    if not name or typeof isSwitch is 'undefined' or not regexp or not querystr or not order
+    if not name or typeof isSwitch is 'undefined' or not regexp or not querystr or typeof order is 'undefined'
         return false
 
     if Utils.IsEmptyString name or Utils.IsEmptyString regexp or Utils.IsEmptyString querystr

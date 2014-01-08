@@ -112,7 +112,7 @@
                                 <input class="button postfix" type="button" ng-click="addTask()" value="Create">
                             </div>
                         </div>
-                        <div ng-model="error" class="row alert">
+                        <div ng-model="error" ng-show="!!error" class="row panel callout">{{ error }}
                         </div>
                         <div class="row collapse show-for-small-only">
                             <input type="text" name="search" placeholder="your query" ng-model="query">
@@ -143,7 +143,7 @@
                             <input class="button postfix" type="button" ng-click="updateTask()" value="Update">
                         </div>
                     </div>
-                    <div class="row alert" ng-model="edit_status"></div>
+                    <div class="row alert" ng-model="edit_status">{{edit_status}}</div>
                     <a class="close-reveal-modal">&#215;</a>
                 </div>
                 <script>$('#editModal').foundation();</script>

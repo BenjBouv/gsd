@@ -1,6 +1,13 @@
 var gsd = angular.module('gsd', ['gsd.TaskService', 'gsd.TagService'])
 
 gsd.controller('TaskController', function($scope, Task, Tag) {
+    function showError (err, lastAction) {
+        $scope.error = 'Error' + ((lastAction) ? ' when ' + lastAction : '') + ':' + err.data;
+    }
+    function showEditError (err, lastAction) {
+        $scope.edit_status = 'Error' + ((lastAction) ? ' when ' + lastAction : '') + ':' + err.data;
+    }
+
     $scope.metatags = [];
     var results = $scope.results = {};
     // sort by done first, then lastUpdateDate (so that the most ancient todos show up first)
@@ -89,6 +96,8 @@ gsd.controller('TaskController', function($scope, Task, Tag) {
         var method = ($scope.archivedMode) ? Task.archived : Task.query;
         $scope.tasks = method(function() {
             reparse();
+        }, function(err) {
+            showError(err, 'loading all tasks');
         });
     }
     $scope.archivedMode = false;
@@ -101,9 +110,7 @@ gsd.controller('TaskController', function($scope, Task, Tag) {
 
     $scope.getArchivedTasks = function() {
         $scope.archivedMode = true;
-        $scope.tasks = Task.archived(function() {
-            reparse();
-        });
+        reloadTasks();
     }
 
     $scope.Search = (function() {
@@ -208,7 +215,7 @@ gsd.controller('TaskController', function($scope, Task, Tag) {
             $scope.content = '';
         }, function(err) {
             // error
-            $scope.error = 'Error when adding a task';
+            showError(err, 'adding a task');
         });
     }
 
@@ -219,7 +226,7 @@ gsd.controller('TaskController', function($scope, Task, Tag) {
             reparse(); // to update count
         }, function(err) {
             // error
-            $scope.error = 'Error when setting the task as done';
+            showError(err, 'setting the task as done');
         });
     }
 
@@ -228,9 +235,9 @@ gsd.controller('TaskController', function($scope, Task, Tag) {
         task.$delete(function() {
             // success
             reloadTasks();
-        }, function() {
+        }, function(err) {
             // error
-            $scope.error = 'Error when deleting the task';
+            showError(err, 'deleting a task');
         });
     }
 
@@ -271,9 +278,9 @@ gsd.controller('TaskController', function($scope, Task, Tag) {
             // success
             reloadTasks();
             EditModal.close();
-        }, function() {
+        }, function(err) {
             // error
-            $scope.edit_status = 'Error when updating the task content';
+            showEditError(err, 'updating the task content');
         });
     }
 
@@ -282,9 +289,9 @@ gsd.controller('TaskController', function($scope, Task, Tag) {
         task.$save(function() {
             // success
             reloadTasks();
-        }, function() {
+        }, function(err) {
             // error
-            $scope.edit_status = 'Error when archiving the task content';
+            showError(err, 'archiving or dis-archiving the task');
         });
     }
 
@@ -359,16 +366,16 @@ gsd.controller('TaskController', function($scope, Task, Tag) {
             $scope.tagName = $scope.tagRegexp = $scope.tagQuerystr = $scope.tagOrder = '';
             $scope.tagIsSwitch = false;
             reloadTags();
-        }, function() {
-            $scope.error = 'Error when adding a tag';
+        }, function(err) {
+            showError(err, 'adding a tag');
         });
     }
 
     $scope.deleteTag = function(tag) {
         tag.$delete(function() {
             reloadTags();
-        }, function() {
-            $scope.error = 'Error when deleting the tag';
+        }, function(err) {
+            showError(err, 'deleting a tag');
         });
     }
 });

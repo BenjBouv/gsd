@@ -1,48 +1,7 @@
-var gsd = angular.module('gsd', ['gsd.TaskService'])
+var gsd = angular.module('gsd', ['gsd.TaskService', 'gsd.TagService'])
 
-gsd.controller('TaskController', function($scope, Task) {
-    var metatags = {
-        waiting: {
-            isSwitch: true,
-            name: 'Waiting list',
-            regexp: /:w/g,
-            querystr: ':w',
-            order: 0
-        },
-        tag: {
-            isSwitch: false,
-            name: 'Tag',
-            regexp: /#(\w+)?/g,
-            querystr: '#',
-            order: 10
-        },
-        place: {
-            isSwitch: false,
-            name: 'Place',
-            regexp: /@(\w+)/g,
-            querystr: '@',
-            order: 20
-        },
-        priority: {
-            isSwitch: false,
-            name: 'Priority',
-            regexp: /:p(\d)/g,
-            querystr: ':p',
-            order: 30
-        }
-    };
-
-    $scope.metatags = (function() {
-        var a = [];
-        for (var id in metatags) {
-            var obj = metatags[id];
-            obj.id = id;
-            a.push(obj);
-        }
-        a.sort(function(x,y){return x.order > y.order});
-        return a;
-    })();
-
+gsd.controller('TaskController', function($scope, Task, Tag) {
+    $scope.metatags = [];
     var results = $scope.results = {};
     // sort by done first, then lastUpdateDate (so that the most ancient todos show up first)
     $scope.orderProp = ['done', 'lastUpdateDate'];
@@ -114,21 +73,16 @@ gsd.controller('TaskController', function($scope, Task) {
     }
 
     function reparse() {
-        for (var id in metatags) {
-            var m = metatags[id];
+        for (var i = 0 ; i < $scope.metatags.length; ++i) {
+            var m = $scope.metatags[i];
             var r;
             if (m.isSwitch) {
                 r = findSwitch(m.regexp);
             } else {
                 r = findMark(m.regexp);
             }
-            results[id] = r;
+            results[m.name] = r;
         }
-
-        $scope.tags = results.tag;
-        $scope.places = results.place;
-        $scope.priorities = results.priority;
-        $scope.waiting = results.waiting;
     }
 
     var reloadTasks = function () {
@@ -159,8 +113,8 @@ gsd.controller('TaskController', function($scope, Task) {
         function _emptyCurrentQuery() {
             _unmatched = {};
             _current = {};
-            for (var id in metatags)
-                _current[id] = ""
+            for (var i = 0; i < $scope.metatags.length; ++i)
+                _current[$scope.metatags[i].name] = ""
         }
 
         function _reinitCurrent() {
@@ -177,15 +131,15 @@ gsd.controller('TaskController', function($scope, Task) {
 
         function _parse(str) {
             var found = false;
-            for (var id in metatags) {
-                var m = metatags[id];
+            for (var i = 0; i < $scope.metatags.length; ++i) {
+                var m = $scope.metatags[i];
                 m.regexp.lastIndex = 0; // damn, global regexp
                 if (m.regexp.test(str)) {
-                    _current[id] = str;
+                    _current[m.name] = str;
                     found = true;
                     break;
                 } else if (str[0] === '!' && str.substr(1, str.length) == m.querystr) {
-                    _current[id] = str;
+                    _current[m.name] = str;
                     found = true;
                     break;
                 }
@@ -220,7 +174,8 @@ gsd.controller('TaskController', function($scope, Task) {
             }
 
             var found = false;
-            for (var id in metatags) {
+            for (var i = 0; i < $scope.metatags.length; ++i) {
+                var id = $scope.metatags[i].name;
                 if (field === id) {
                     found = true;
                     _current[id] = "";
@@ -281,25 +236,26 @@ gsd.controller('TaskController', function($scope, Task) {
 
     var currentTask = null;
 
-    var Modal = (function() {
-        var editModal = $('[data-reveal]');
+    var Modal = function(name) {
+        var modal = $(name);
         function _open() {
-            editModal.foundation('reveal', 'open');
+            modal.foundation('reveal', 'open');
         }
         function _close() {
-            editModal.foundation('reveal', 'close');
+            modal.foundation('reveal', 'close');
         }
         return {
             open: _open,
             close: _close
         }
-    })();
+    };
 
+    var EditModal = Modal('#editModal');
     $scope.editCurrent = function(task) {
         $scope.edit_id = task.id;
         $scope.edit_content = task.content;
         currentTask = task;
-        Modal.open();
+        EditModal.open();
     }
 
     $scope.updateTask = function() {
@@ -314,7 +270,7 @@ gsd.controller('TaskController', function($scope, Task) {
         currentTask.$save(function() {
             // success
             reloadTasks();
-            Modal.close();
+            EditModal.close();
         }, function() {
             // error
             $scope.edit_status = 'Error when updating the task content';
@@ -365,4 +321,54 @@ gsd.controller('TaskController', function($scope, Task) {
             return true;
         }
     })();
+
+    var TagModal = Modal('#tagModal');
+    $scope.openTagModal = function() {
+        TagModal.open();
+    };
+
+    function reloadTags() {
+        var metatags = Tag.query(function() {
+
+            metatags.sort(function(a, b) { return a.order > b.order });
+            for (var i = 0; i < metatags.length; ++i) {
+                metatags[i].regexp = new RegExp(metatags[i].regexp, 'g');
+            }
+
+            $scope.metatags = metatags;
+            reparse();
+        });
+    }
+    reloadTags();
+
+    $scope.createTag = function() {
+        var name = $scope.tagName,
+            isSwitch = !!$scope.tagIsSwitch,
+            regexp = $scope.tagRegexp,
+            querystr = $scope.tagQuerystr,
+            order = $scope.tagOrder | 0;
+
+        var t = new Tag({
+            name: name,
+            isSwitch: isSwitch,
+            regexp: regexp,
+            querystr: querystr,
+            order: order
+        });
+        t.$save(function() {
+            $scope.tagName = $scope.tagRegexp = $scope.tagQuerystr = $scope.tagOrder = '';
+            $scope.tagIsSwitch = false;
+            reloadTags();
+        }, function() {
+            $scope.error = 'Error when adding a tag';
+        });
+    }
+
+    $scope.deleteTag = function(tag) {
+        tag.$delete(function() {
+            reloadTags();
+        }, function() {
+            $scope.error = 'Error when deleting the tag';
+        });
+    }
 });

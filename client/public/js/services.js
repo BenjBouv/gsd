@@ -7,3 +7,11 @@ TaskService.factory('Task', ['$resource', function ($resource) {
         archived: {method: 'GET', params:{archived:true}, isArray: true, cache:false}
     });
 }]);
+
+var TagService = angular.module('gsd.TagService', ['ngResource']);
+
+TagService.factory('Tag', ['$resource', function ($resource) {
+    return $resource('tags/:tid', {
+        tid: '@id'
+    });
+}]);

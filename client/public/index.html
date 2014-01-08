@@ -73,25 +73,30 @@
 
                         <div ng-if="m.isSwitch">
                              <li>
-                             <a ng-click="Search.update(m.querystr)">{{m.name}} ({{results[m.id].with.done}} / {{results[m.id].with.total}})</a>
+                             <a ng-click="Search.update(m.querystr)">{{m.name}} ({{results[m.name].with.done}} / {{results[m.name].with.total}})</a>
                             </li>
                             <li>
-                                 <a ng-click="Search.update('!' + m.querystr)">Not {{m.name}} ({{results[m.id].without.done}} / {{results[m.id].without.total}})</a>
+                                 <a ng-click="Search.update('!' + m.querystr)">Not {{m.name}} ({{results[m.name].without.done}} / {{results[m.name].without.total}})</a>
                             </li>
                         </div>
 
                         <div ng-if="!m.isSwitch">
                             <li>{{m.name}}</li>
                             <li>
-                                <a ng-click="Search.clear(m.id)">Clear {{m.name}}</a>
+                                <a ng-click="Search.clear(m.name)">Clear {{m.name}}</a>
                             </li>
                             <li>
                                 <a ng-click="Search.update('!' + m.querystr)">No {{m.name}}</a>
                             </li>
-                            <li ng-repeat="r in results[m.id]">
+                            <li ng-repeat="r in results[m.name]">
                                 <a ng-click="Search.update(m.querystr + r.name)">{{r.name}} ({{r.done}} / {{r.total}})</a>
                             </li>
                         </div>
+                    </ul>
+
+                    <ul class='side-nav'>
+                        <li class="divider"></li>
+                        <li><a ng-click='openTagModal()'>Manage meta-tags</a></li>
                     </ul>
                 </form>
             </div>
@@ -142,6 +147,43 @@
                     <a class="close-reveal-modal">&#215;</a>
                 </div>
                 <script>$('#editModal').foundation();</script>
+
+                <div id="tagModal" class="reveal-modal show-for-medium-up" data-reveal>
+                    <div class="row collapse">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Switch</th>
+                                    <th>Regexp</th>
+                                    <th>Query string</th>
+                                    <th>Order</th>
+                                    <th>Delete</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="t in metatags">
+                                    <td>{{ t.name }}</td>
+                                    <td>{{ t.isSwitch }}</td>
+                                    <td>{{ t.regexp.toString() }}</td>
+                                    <td>{{ t.querystr }}</td>
+                                    <td>{{ t.order }}</td>
+                                    <td><input type="button" ng-click="deleteTag(t)" value="delete" />
+                                </tr>
+                                <tr>
+                                    <td><input type="text" ng-model="tagName" placeholder="Tag name"/></td>
+                                    <td><input type="checkbox" ng-model="tagIsSwitch" />Is a switch</td>
+                                    <td><input type="text" ng-model="tagRegexp" placeholder="Regular expression"/></td>
+                                    <td><input type="text" ng-model="tagQuerystr" placeholder="Query string"/></td>
+                                    <td><input type="text" ng-model="tagOrder" placeholder="Order in the list (integer)"/></td>
+                                    <td><input type="button" class="button postfix" ng-click="createTag()" value="Create" /></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <a class="close-reveal-modal">&#215;</a>
+                </div>
+                <script>$('#tagModal').foundation();</script>
             </div>
         </div>
 

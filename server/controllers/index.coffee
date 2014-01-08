@@ -1,5 +1,6 @@
 Tasks = require '../models/tasks'
 Users = require '../models/users'
+Utils = require './utils'
 
 module.exports.login = (req, res, next) ->
     Users.getId req.session.email, () ->
@@ -21,16 +22,13 @@ module.exports.all = (req, res, next) ->
             return
         res.json tasks
 
-IsEmptyString = (val) ->
-    return !val || val.length == 0 || !/\S/.test val
-
 module.exports.add = (req, res, next) ->
     t =
         content: req.param 'content'
         done: false
         archived: false
 
-    if IsEmptyString t.content
+    if Utils.IsEmptyString t.content
         res.send 400, 'empty content for the todo'
         return
 
@@ -60,7 +58,7 @@ module.exports.update = (req, res, next) ->
         archived: archived
         content: content
 
-    if IsEmptyString t.content
+    if Utils.IsEmptyString t.content
         res.send 400, 'empty content for the todo'
         return
 
